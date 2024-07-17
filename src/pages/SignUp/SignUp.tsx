@@ -135,39 +135,38 @@ function SignUp() {
                 <p className="mx-2">or</p>
                 <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
               </div>
-
-              {/* Sign Up with */}
-              <div className="flex flex-col space-y-2 mb-0">
-                <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
-                  <div className="flex items-center justify-start gap-2 w-full ml-12 text-start">
-                    <FaGoogle size={22} />
-                    Sign Up with Gooole
-                  </div>
-                </ButtonSignUpWith>
-
-                <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
-                  <div className="flex items-center justify-start gap-2 w-full ml-12 text-start">
-                    <FaFacebook size={24} />
-                    Sign Up with Facebook
-                  </div>
-                </ButtonSignUpWith>
-
-                <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
-                  <div className="flex items-center justify-start gap-1 w-full ml-12 text-left">
-                    <FaApple size={30} viewBox="0 0 512 512" />
-                    Sign Up with Apple
-                  </div>
-                </ButtonSignUpWith>
-              </div>
             </form>
           </Form>
+          {/* Sign Up with */}
+          <div className="flex flex-col space-y-2 mb-0">
+            <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
+              <div className="flex items-center justify-center gap-2 w-full text-start">
+                <FaGoogle size={22} />
+                Sign Up with Google
+              </div>
+            </ButtonSignUpWith>
+
+            <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
+              <div className="flex items-center justify-center gap-2 w-full text-start">
+                <FaFacebook size={24} />
+                Sign Up with Facebook
+              </div>
+            </ButtonSignUpWith>
+
+            <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
+              <div className="flex items-center justify-center gap-[1px] w-full text-left">
+                <FaApple size={30} viewBox="0 0 512 512" />
+                Sign Up with Apple
+              </div>
+            </ButtonSignUpWith>
+          </div>
         </CardContent>
 
         {/* Footer */}
         <CardFooter>
           <p className="text-sm">
-            Aleready have an account?{" "}
-            <a href="" className="font-bold">
+            Already have an account?{" "}
+            <a href="/login" className="font-bold">
               Login
             </a>
           </p>
