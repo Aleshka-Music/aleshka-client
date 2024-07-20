@@ -2,6 +2,7 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { registerRequest } from "./api/auth";
 import {
   Form,
   FormControl,
@@ -21,10 +22,11 @@ import { Input } from "@/pages/SignUp/components/ui/input";
 import { Button } from "@/pages/SignUp/components/ui/button";
 import { Separator } from "@/pages/SignUp/components/ui/separator";
 import { ButtonSignUpWith } from "@/pages/SignUp/components/ui/button-signup-with";
-import { FaGoogle } from "react-icons/fa";
-import { FaFacebook } from "react-icons/fa";
-import { FaApple } from "react-icons/fa";
+import { FaSpotify, FaApple } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+//IMPORTS 
 
+//Zod Validation
 const formSchema = z
   .object({
     emailAddress: z.string().email(),
@@ -35,7 +37,10 @@ const formSchema = z
     message: "Passwords do not match",
     path: ["passwordConfirm"],
   });
+
+//SIGNUP
 function SignUp() {
+  //Zod Validation
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,9 +48,14 @@ function SignUp() {
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+  //Form Submission
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     console.log(data);
+
+    const resLogin = await registerRequest(data.emailAddress, data.password);
+    console.log(resLogin);
   };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center duration-500">
       <div className="absolute right-0 top-0 p-2">
@@ -139,24 +149,27 @@ function SignUp() {
           </Form>
           {/* Sign Up with */}
           <div className="flex flex-col space-y-2 mb-0">
-            <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
+            {/* Spotify Button */}
+            <ButtonSignUpWith className="dark:bg-[#2c2c2c] dark:text-white bg-[#e8e8e8] text-black h-10">
               <div className="flex items-center justify-center gap-2 w-full text-start">
-                <FaGoogle size={22} />
-                Sign Up with Google
+                <FaSpotify size={26} viewBox="0 0 512 512" fill="#1DB954" />
+                Continue with Spotify
               </div>
             </ButtonSignUpWith>
 
-            <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
-              <div className="flex items-center justify-center gap-2 w-full text-start">
-                <FaFacebook size={24} />
-                Sign Up with Facebook
+            {/* Apple Music Button */}
+            <ButtonSignUpWith className="dark:bg-[#2c2c2c] dark:text-white bg-[#e8e8e8] text-black h-10">
+              <div className="flex items-center justify-center gap-1 w-full text-start">
+                <FaApple size={30} />
+                Continue with Apple Music
               </div>
             </ButtonSignUpWith>
 
-            <ButtonSignUpWith className="dark:bg-[#252525] dark:text-white bg-[#cccccc] text-black">
-              <div className="flex items-center justify-center gap-[1px] w-full text-left">
-                <FaApple size={30} viewBox="0 0 512 512" />
-                Sign Up with Apple
+            {/* Google Button */}
+            <ButtonSignUpWith className="dark:bg-[#2c2c2c] dark:text-white bg-[#e8e8e8] text-black h-10">
+              <div className="flex items-center justify-center gap-2 w-full text-start">
+                <FcGoogle size={28} />
+                Continue with Google
               </div>
             </ButtonSignUpWith>
           </div>
@@ -167,7 +180,7 @@ function SignUp() {
           <p className="text-sm">
             Already have an account?{" "}
             <a href="/login" className="font-bold">
-              Login
+              Log In
             </a>
           </p>
         </CardFooter>
