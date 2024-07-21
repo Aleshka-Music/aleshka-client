@@ -24,13 +24,20 @@ import { Separator } from "@/pages/SignUp/components/ui/separator";
 import { ButtonSignUpWith } from "@/pages/SignUp/components/ui/button-signup-with";
 import { FaSpotify, FaApple } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-//IMPORTS 
+//IMPORTS
 
 //Zod Validation
+const usernameSchema = z.string()
+  .min(3, { message: "Username must be at least 3 characters" })
+  .max(30, { message: "Username must be less than or equal to 30 characters" })
+  .regex(/^[a-zA-Z0-9._]+$/, { message: "Username can only contain letters, numbers, periods, and underscores" })
+  .regex(/^(?!.*[.]{2,}).*$/, { message: "Username cannot contain consecutive periods" });
+
 const formSchema = z
   .object({
+    username: usernameSchema,
     emailAddress: z.string().email(),
-    password: z.string().min(6),
+    password: z.string().min(6, { message: "Password must be at least 6 characters" }).max(20, { message: "Password must be less than or equal to 20 characters" }),
     passwordConfirm: z.string(),
   })
   .refine((data) => data.password === data.passwordConfirm, {
@@ -52,7 +59,11 @@ function SignUp() {
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     console.log(data);
 
-    const resLogin = await registerRequest(data.emailAddress, data.password);
+    const resLogin = await registerRequest(
+      data.emailAddress,
+      data.password,
+      data.username
+    );
     console.log(resLogin);
   };
 
@@ -74,6 +85,24 @@ function SignUp() {
         <CardContent className="">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)}>
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => {
+                  return (
+                    <FormItem className="flex-col mb-2 text-left">
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your username."
+                          type="text"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="dark:text-red-500" />
+                    </FormItem>
+                  );
+                }}
+              />
               <FormField
                 control={form.control}
                 name="emailAddress"
