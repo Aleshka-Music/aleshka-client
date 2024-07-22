@@ -1,221 +1,314 @@
-// import React from 'react'
-import * as z from "zod";
-import { useForm } from "react-hook-form";
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { z } from "zod";
+import { FormDataSchema } from "./lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerRequest } from "./api/auth";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { useForm, SubmitHandler } from "react-hook-form";
+
+import { Card, CardFooter } from "./components/ui/card";
+import { Input } from "./components/ui/input";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/pages/SignUp/components/ui/card";
-import { Input } from "@/pages/SignUp/components/ui/input";
-import { Button } from "@/pages/SignUp/components/ui/button";
-import { Separator } from "@/pages/SignUp/components/ui/separator";
-import { ButtonSignUpWith } from "@/pages/SignUp/components/ui/button-signup-with";
-import { FaSpotify, FaApple } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-//IMPORTS
+import { Separator } from "@radix-ui/react-separator";
+import SignupWith from "./components/ui/signup-with";
+import { GrLinkNext, GrLinkPrevious } from "react-icons/gr";
 
-//Zod Validation
-const usernameSchema = z.string()
-  .min(3, { message: "Username must be at least 3 characters" })
-  .max(30, { message: "Username must be less than or equal to 30 characters" })
-  .regex(/^[a-zA-Z0-9._]+$/, { message: "Username can only contain letters, numbers, periods, and underscores" })
-  .regex(/^(?!.*[.]{2,}).*$/, { message: "Username cannot contain consecutive periods" });
+type Inputs = z.infer<typeof FormDataSchema>;
 
-const formSchema = z
-  .object({
-    username: usernameSchema,
-    emailAddress: z.string().email(),
-    password: z.string().min(6, { message: "Password must be at least 6 characters" }).max(20, { message: "Password must be less than or equal to 20 characters" }),
-    passwordConfirm: z.string(),
-  })
-  .refine((data) => data.password === data.passwordConfirm, {
-    message: "Passwords do not match",
-    path: ["passwordConfirm"],
+const steps = [
+  {
+    id: "Step 1",
+    name: "Basic Info",
+    fields: ["email", "phoneNumber", "password", "confirmPassword"],
+  },
+  {
+    id: "Step 2",
+    name: "Personal Info",
+    fields: ["userName", "firstName", "lastName", "birthDate"],
+  },
+  { id: "Step 3", name: "Complete" },
+];
+
+export default function Form() {
+  const [previousStep, setPreviousStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const delta = currentStep - previousStep;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    trigger,
+    formState: { errors },
+  } = useForm<Inputs>({
+    resolver: zodResolver(FormDataSchema),
   });
 
-//SIGNUP
-function SignUp() {
-  //Zod Validation
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      emailAddress: "",
-    },
-  });
-
-  //Form Submission
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  const processForm: SubmitHandler<Inputs> = (data) => {
     console.log(data);
+    reset();
+  };
 
-    const resLogin = await registerRequest(
-      data.emailAddress,
-      data.password,
-      data.username
-    );
-    console.log(resLogin);
+  type FieldName = keyof Inputs;
+
+  const next = async () => {
+    const fields = steps[currentStep].fields;
+    const output = await trigger(fields as FieldName[], { shouldFocus: true });
+
+    if (!output) return;
+
+    if (currentStep < steps.length - 1) {
+      if (currentStep === steps.length - 2) {
+        await handleSubmit(processForm)();
+      }
+      setPreviousStep(currentStep);
+      setCurrentStep((step) => step + 1);
+    }
+  };
+
+  const prev = () => {
+    if (currentStep > 0) {
+      setPreviousStep(currentStep);
+      setCurrentStep((step) => step - 1);
+    }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center duration-500">
+    <div className="flex min-h-screen flex-col items-center justify-start duration-500">
       <div className="absolute right-0 top-0 p-2">
         <ModeToggle />
       </div>
-      <h1 className="text-3xl font-bold p-2 duration-300">
+      <h1 className="text-3xl font-bold pt-10 pb-1 mx-2 duration-300">
         Welcome to Aleshka
       </h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Get Started for Free!</CardTitle>
-        </CardHeader>
+      <Card className="flex flex-col justify-between w-11/12 px-4">
+        <nav aria-label="Progress">
+          <ol role="list" className="flex mt-2">
+            {steps.map((step, index) => (
+              <li key={step.id} className="flex-1">
+                {currentStep > index ? (
+                  <div className="group flex w-full flex-col border-t-[.2em] border-[#eeeeee] dark:border-[#1f1f1f] py-2 pt-1 pl-4 transition-colors">
+                    <span className="text-[.7em] font-medium text-[#c5c5c5] dark:text-[#343434] transition-colors">
+                      {step.id}
+                    </span>
+                  </div>
+                ) : currentStep === index ? (
+                  <div
+                    className="flex w-full flex-col border-t-[.2em] border-black dark:border-white py-2 pt-1 pl-4"
+                    aria-current="step"
+                  >
+                    <span className="text-[.7em] font-medium text-black dark:text-white">
+                      {step.id}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="group flex w-full flex-col border-t-[.2em] border-[#eeeeee] dark:border-[#1f1f1f] py-2 pt-1 pl-4 transition-colors">
+                    <span className="text-[.7em] font-medium text-[#c5c5c5] dark:text-[#343434] transition-colors">
+                      {step.id}
+                    </span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-        {/* Form */}
-        <CardContent className="">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)}>
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="flex-col mb-2 text-left">
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your username."
-                          type="text"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="dark:text-red-500" />
-                    </FormItem>
-                  );
-                }}
-              />
-              <FormField
-                control={form.control}
-                name="emailAddress"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="flex-col mb-2 text-left">
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your email."
-                          type="email"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="dark:text-red-500" />
-                    </FormItem>
-                  );
-                }}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="flex-col mb-2 text-left">
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your password."
-                          type="password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="dark:text-red-500" />
-                    </FormItem>
-                  );
-                }}
-              />
-              <FormField
-                control={form.control}
-                name="passwordConfirm"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="flex-col mb-2 text-left">
-                      <FormControl>
-                        <Input
-                          placeholder="Confirm your password."
-                          type="password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="dark:text-red-500" />
-                    </FormItem>
-                  );
-                }}
-              />
+        <form className="pb-2" onSubmit={handleSubmit(processForm)}>
+          {currentStep === 0 && (
+            <motion.div
+              initial={{ x: delta >= 0 ? "50%" : "-50%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <div className="flex-col justify-between mt-4">
+                <div className="text-start">
+                  <Input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    {...register("email")}
+                    autoComplete="email"
+                  />
+                  {errors.email?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 text-start">
+                  <Input
+                    type="number"
+                    id="phoneNumber"
+                    placeholder="Enter your phone number"
+                    {...register("phoneNumber")}
+                    autoComplete="phoneNumber"
+                  />
+                  {errors.phoneNumber?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.phoneNumber.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 text-start">
+                  <Input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    {...register("password")}
+                    autoComplete="current-password"
+                  />
+                  {errors.password?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 text-start">
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    {...register("confirmPassword")}
+                    autoComplete="current-password"
+                  />
+                  {errors.confirmPassword?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-              {/* Button */}
-              <div className="mt-3">
-                <Button
-                  type="submit"
-                  className="w-full h-10  bg-black text-white dark:bg-[#ffffff] dark:text-black hover:bg-none duration-500"
-                >
-                  Sign Up
-                </Button>
+          {currentStep === 1 && (
+            <motion.div
+              initial={{ x: delta >= 0 ? "50%" : "-50%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <div className="flex-col justify-between mt-4">
+                <div className="text-start">
+                  <Input
+                    type="text"
+                    id="userName"
+                    placeholder="Enter your username"
+                    {...register("userName")}
+                    autoComplete="username"
+                  />
+                  {errors.userName?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.userName.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 text-start">
+                  <Input
+                    type="text"
+                    id="firstName"
+                    placeholder="Enter your first name"
+                    {...register("firstName")}
+                    autoComplete="given-name"
+                  />
+                  {errors.firstName?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.firstName.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 text-start">
+                  <Input
+                    type="text"
+                    id="lastName"
+                    placeholder="Enter your last name"
+                    {...register("lastName")}
+                    autoComplete="family-name"
+                  />
+                  {errors.lastName?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.lastName.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 text-start">
+                  <Input
+                    id="birthDate"
+                    type="date"
+                    className="text-white"
+                    placeholder="Enter your birth date"
+                    {...register("birthDate")}
+                    autoComplete="bday"
+                  />
+                  {errors.birthDate?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.birthDate.message}
+                    </p>
+                  )}
+                </div>
               </div>
+            </motion.div>
+          )}
 
-              {/* Separator */}
-              <div className="flex items-center justify-center px-4 py-3">
-                <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
-                <p className="mx-2">or</p>
-                <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
-              </div>
-            </form>
-          </Form>
-          {/* Sign Up with */}
-          <div className="flex flex-col space-y-2 mb-0">
-            {/* Spotify Button */}
-            <ButtonSignUpWith className="dark:bg-[#2c2c2c] dark:text-white bg-[#e8e8e8] text-black h-10">
-              <div className="flex items-center justify-center gap-2 w-full text-start">
-                <FaSpotify size={26} viewBox="0 0 512 512" fill="#1DB954" />
-                Continue with Spotify
-              </div>
-            </ButtonSignUpWith>
+          {currentStep === 2 && (
+            <>
+              <h2 className="text-base font-semibold leading-7 text-black dark:text-white">
+                Thank you!
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-black dark:text-white">
+                Your account has been successfully created.
+              </p>
+            </>
+          )}
+        </form>
 
-            {/* Apple Music Button */}
-            <ButtonSignUpWith className="dark:bg-[#2c2c2c] dark:text-white bg-[#e8e8e8] text-black h-10">
-              <div className="flex items-center justify-center gap-1 w-full text-start">
-                <FaApple size={30} />
-                Continue with Apple Music
-              </div>
-            </ButtonSignUpWith>
-
-            {/* Google Button */}
-            <ButtonSignUpWith className="dark:bg-[#2c2c2c] dark:text-white bg-[#e8e8e8] text-black h-10">
-              <div className="flex items-center justify-center gap-2 w-full text-start">
-                <FcGoogle size={28} />
-                Continue with Google
-              </div>
-            </ButtonSignUpWith>
+        <CardFooter className="pb-0">
+          <div className="mt-3">
+            <div className="flex justify-between gap-3">
+              <button
+                type="button"
+                onClick={prev}
+                disabled={currentStep === 0}
+                className="bg-transparent px-2 py-1 border-black dark:border-white border-[0.7px] rounded-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <GrLinkPrevious />
+              </button>
+              <button
+                type="button"
+                onClick={next}
+                disabled={currentStep === steps.length - 1}
+                className="bg-transparent px-2 py-1 border-black dark:border-white border-[0.7px] rounded-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {currentStep === steps.length - 2 ? (
+                  "Sign Up"
+                ) : currentStep === steps.length - 1 ? (
+                  "Complete"
+                ) : (
+                  <GrLinkNext />
+                )}
+              </button>
+            </div>
           </div>
-        </CardContent>
+        </CardFooter>
+      </Card>
 
-        {/* Footer */}
-        <CardFooter>
+      <footer className="w-11/12 px-4">
+        <div className="flex items-center justify-center py-3">
+          <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
+          <p className="mx-2">or</p>
+          <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
+        </div>
+        <SignupWith />
+        <div className="text-center pt-2">
           <p className="text-sm">
             Already have an account?{" "}
             <a href="/login" className="font-bold">
               Log In
             </a>
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+      </footer>
     </div>
   );
 }
-
-export default SignUp;
