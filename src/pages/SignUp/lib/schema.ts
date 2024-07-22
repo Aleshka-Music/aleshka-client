@@ -11,18 +11,10 @@ const usernameSchema = z
     message: "Username cannot contain consecutive periods",
   });
 
-const phoneNumberSchema = z
-  .string()
-  .min(1, { message: "Phone number is required" })
-  .max(15, { message: "Phone number must be less than or equal to 15 characters" })
-  .regex(/^\+?\d{1,4}?[-.\s]?(\(?\d{1,3}?\)?[-.\s]?)?[\d-.\s]{7,14}$/, {
-    message: "Invalid phone number format",
-  });
-
 const birthDateSchema = z
   .string()
   .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/, {
-    message: "Invalid date format. Expected YYYY-MM-DD",
+    message: "Invalid date format",
   })
   .refine((dateString) => {
     const date = new Date(dateString);
@@ -37,7 +29,6 @@ const passwordSchema = z
   .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
   .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
   .regex(/\d/, { message: "Password must contain at least one number" })
-  .regex(/[@$!%*?&#]/, { message: "Password must contain at least one special character (@, $, !, %, *, ?, &, #)" });
 
 const firstNameSchema = z
   .string()
@@ -53,15 +44,14 @@ const lastNameSchema = z
 export const FormDataSchema = z
   .object({
     email: z.string().email({ message: "Invalid email address" }),
-    phoneNumber: phoneNumberSchema,
     userName: usernameSchema,
     firstName: firstNameSchema,
     lastName: lastNameSchema,
     birthDate: birthDateSchema,
     password: passwordSchema,
-    confirmPassword: z.string().min(1, { message: "Confirm password is required" }),
+    confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
-    path: ["passwordConfirm"],
+    path: ["confirmPassword"],
   });

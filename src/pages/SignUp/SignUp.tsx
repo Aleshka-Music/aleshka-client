@@ -20,7 +20,7 @@ const steps = [
   {
     id: "Step 1",
     name: "Basic Info",
-    fields: ["email", "phoneNumber", "password", "confirmPassword"],
+    fields: ["email", "password", "confirmPassword"],
   },
   {
     id: "Step 2",
@@ -139,20 +139,6 @@ export default function Form() {
                 </div>
                 <div className="mt-4 text-start">
                   <Input
-                    type="number"
-                    id="phoneNumber"
-                    placeholder="Enter your phone number"
-                    {...register("phoneNumber")}
-                    autoComplete="phoneNumber"
-                  />
-                  {errors.phoneNumber?.message && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.phoneNumber.message}
-                    </p>
-                  )}
-                </div>
-                <div className="mt-4 text-start">
-                  <Input
                     type="password"
                     id="password"
                     placeholder="Enter your password"
@@ -253,61 +239,75 @@ export default function Form() {
 
           {currentStep === 2 && (
             <>
-              <h2 className="text-base font-semibold leading-7 text-black dark:text-white">
+              <h2 className="mt-[8em] text-2xl font-semibold leading-7 text-black dark:text-white">
                 Thank you!
               </h2>
-              <p className="mt-1 text-sm leading-6 text-black dark:text-white">
+              <p className="mt-1 text-md leading-6 text-black dark:text-white">
                 Your account has been successfully created.
               </p>
             </>
           )}
         </form>
 
-        <CardFooter className="pb-0">
-          <div className="mt-3">
-            <div className="flex justify-between gap-3">
-              <button
-                type="button"
-                onClick={prev}
-                disabled={currentStep === 0}
-                className="bg-transparent px-2 py-1 border-black dark:border-white border-[0.7px] rounded-sm disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <GrLinkPrevious />
-              </button>
-              <button
-                type="button"
-                onClick={next}
-                disabled={currentStep === steps.length - 1}
-                className="bg-transparent px-2 py-1 border-black dark:border-white border-[0.7px] rounded-sm disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {currentStep === steps.length - 2 ? (
-                  "Sign Up"
-                ) : currentStep === steps.length - 1 ? (
-                  "Complete"
-                ) : (
-                  <GrLinkNext />
-                )}
-              </button>
+        {currentStep === 2 ? (
+          ""
+        ) : (
+          <CardFooter className="pb-0">
+            <div className="mt-3">
+              <div className="flex justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={prev}
+                  disabled={currentStep === 0}
+                  className="bg-transparent px-2 py-1 border-black dark:border-white border-[0.7px] rounded-sm disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <GrLinkPrevious />
+                </button>
+                <button
+                  type="button"
+                  onClick={next}
+                  disabled={currentStep === steps.length - 1}
+                  className="bg-transparent px-2 py-1 border-black dark:border-white border-[0.7px] rounded-sm disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {currentStep === steps.length - 2 ? (
+                    "Sign Up"
+                  ) : currentStep === steps.length - 1 ? (
+                    "Complete"
+                  ) : (
+                    <GrLinkNext />
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        </CardFooter>
+          </CardFooter>
+        )}
       </Card>
 
       <footer className="w-11/12 px-4">
-        <div className="flex items-center justify-center py-3">
-          <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
-          <p className="mx-2">or</p>
-          <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
-        </div>
-        <SignupWith />
-        <div className="text-center pt-2">
-          <p className="text-sm">
-            Already have an account?{" "}
-            <a href="/login" className="font-bold">
-              Log In
-            </a>
-          </p>
-        </div>
+        {currentStep === 2 ? (
+          ""
+        ) : (
+          <div className="flex items-center justify-center py-3">
+            <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
+            <p className="mx-2">or</p>
+            <Separator className="bg-black dark:bg-[#ffffff] w-1/2 h-[0.7px]" />
+          </div>
+        )}
+
+        {currentStep !== 0 ? "" : <SignupWith />}
+
+        {currentStep === 2 ? (
+          ""
+        ) : (
+          <div className="text-center pt-2">
+            <p className="text-sm">
+              Already have an account?{" "}
+              <a href="/login" className="font-bold">
+                Log In
+              </a>
+            </p>
+          </div>
+        )}
       </footer>
     </div>
   );
