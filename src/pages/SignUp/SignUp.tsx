@@ -1,21 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { z } from "zod";
-import { FormDataSchema } from "./lib/schema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, SubmitHandler } from "react-hook-form";
+// Import libraries
+import { useState } from "react"; // State management in functional components
+import { motion } from "framer-motion"; // Animations
+import { z } from "zod"; // Schema validation
+import { FormData } from "./lib/schema"; // Form data validation schema
+import { zodResolver } from "@hookform/resolvers/zod"; // Resolver for zod and react-hook-form
+import { useForm, SubmitHandler } from "react-hook-form"; // Form management
+import { registerRequest } from "./api/auth";
 
-import { Card, CardFooter } from "./components/ui/card";
-import { Input } from "./components/ui/input";
-import { ModeToggle } from "@/components/ui/mode-toggle";
-import { Separator } from "@radix-ui/react-separator";
-import SignupWith from "./components/ui/signup-with";
-import { GrLinkNext, GrLinkPrevious } from "react-icons/gr";
+// Import components and icons
+import { Card, CardFooter } from "./components/ui/card"; // Card component
+import { Input } from "./components/ui/input"; // Input component
+import { ModeToggle } from "@/components/ui/mode-toggle"; // Mode toggle component (light/dark)
+import { Separator } from "@radix-ui/react-separator"; // Separator
+import SignupWith from "./components/ui/signup-with"; // Signup with other services component
+import { GrLinkNext, GrLinkPrevious } from "react-icons/gr"; // Navigation icons
 
-type Inputs = z.infer<typeof FormDataSchema>;
+// Form input type for validation
+type Inputs = z.infer<typeof FormData>;
 
+// Form steps definition
 const steps = [
   {
     id: "Step 1",
@@ -25,33 +30,67 @@ const steps = [
   {
     id: "Step 2",
     name: "Personal Info",
-    fields: ["userName", "firstName", "lastName", "birthDate"],
+    fields: ["username", "firstName", "lastName", "birthDate"],
   },
   { id: "Step 3", name: "Complete" },
 ];
 
+// Main form component
 export default function Form() {
-  const [previousStep, setPreviousStep] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
-  const delta = currentStep - previousStep;
+  // States to keep track of the steps
+  const [previousStep, setPreviousStep] = useState(0); // Previous step
+  const [currentStep, setCurrentStep] = useState(0); // Current step
+  const delta = currentStep - previousStep; // Difference between current and previous step
 
+  // Form configuration and validation
   const {
-    register,
-    handleSubmit,
-    reset,
-    trigger,
-    formState: { errors },
+    register, // Register form fields
+    handleSubmit, // Handle form submission
+    reset, // Reset form
+    trigger, // Trigger field validation
+    formState: { errors }, // Form errors state
   } = useForm<Inputs>({
-    resolver: zodResolver(FormDataSchema),
+    resolver: zodResolver(FormData), // Resolver with zod for validation
   });
 
-  const processForm: SubmitHandler<Inputs> = (data) => {
-    console.log(data);
-    reset();
+  // Form submission function
+  const processForm: SubmitHandler<Inputs> = async (data) => {
+    console.log(data); // Log form data to console
+
+    // Convert birthDate string to Date object
+    const birthDate = new Date(data.birthDate);
+
+    try {
+      // Get backend response
+      const backendResponse = await registerRequest(
+        data.username,
+        data.email,
+        data.password,
+        data.firstName,
+        data.lastName,
+        birthDate
+      );
+
+      // Manage message based on response
+      if (backendResponse.status === 200) {
+        alert("User created successfully");
+        reset(); // Reset form on success
+      } else if (backendResponse.status === 409) {
+        alert("User already exists");
+        reset(); // Reset form on conflict
+        setCurrentStep(0);
+      } else {
+        alert("An error occurred");
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      alert("An error occurred");
+    }
   };
 
-  type FieldName = keyof Inputs;
+  type FieldName = keyof Inputs; //Form Field Names
 
+  //Form Navigation
   const next = async () => {
     const fields = steps[currentStep].fields;
     const output = await trigger(fields as FieldName[], { shouldFocus: true });
@@ -67,6 +106,7 @@ export default function Form() {
     }
   };
 
+  //Form Navigation to previous step
   const prev = () => {
     if (currentStep > 0) {
       setPreviousStep(currentStep);
@@ -179,14 +219,14 @@ export default function Form() {
                 <div className="text-start">
                   <Input
                     type="text"
-                    id="userName"
+                    id="username"
                     placeholder="Enter your username"
-                    {...register("userName")}
+                    {...register("username")}
                     autoComplete="username"
                   />
-                  {errors.userName?.message && (
+                  {errors.username?.message && (
                     <p className="mt-1 text-sm text-red-500">
-                      {errors.userName.message}
+                      {errors.username.message}
                     </p>
                   )}
                 </div>
@@ -243,7 +283,7 @@ export default function Form() {
                 Thank you!
               </h2>
               <p className="mt-1 text-md leading-6 text-black dark:text-white">
-                Your account has been successfully created.
+                Your account has been created.
               </p>
             </>
           )}

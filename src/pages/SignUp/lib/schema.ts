@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // PASSWORD
-const passwordSchema = z
+const password = z
   .string()
   .min(6, { message: "Password must be at least 6 characters" })
   .max(20, { message: "Password must be less than or equal to 20 characters" })
@@ -14,7 +14,7 @@ const passwordSchema = z
   .regex(/\d/, { message: "Password must contain at least one number" });
 
 // USERNAME
-const usernameSchema = z
+const username = z
   .string()
   .min(3, { message: "Username must be at least 3 characters" })
   .max(30, { message: "Username must be less than or equal to 30 characters" })
@@ -27,7 +27,7 @@ const usernameSchema = z
   });
 
 // NAME
-const firstNameSchema = z
+const firstName = z
   .string()
   .min(1, { message: "Name is required" })
   .max(50, { message: "Name is too long" })
@@ -37,7 +37,7 @@ const firstNameSchema = z
   });
 
 // LAST NAME
-const lastNameSchema = z
+const lastName = z
   .string()
   .min(1, { message: "Name is required" })
   .max(50, { message: "Name is too long" })
@@ -47,7 +47,7 @@ const lastNameSchema = z
   });
 
 // BIRTHDATE
-const birthDateSchema = z
+const birthDate = z
   .string()
   .refine((date) => !isNaN(Date.parse(date)), "Must be a valid date")
   .refine(
@@ -74,14 +74,14 @@ const birthDateSchema = z
     { message: "You must be at least 16 years old" }
   );
 
-export const FormDataSchema = z
+export const FormData = z
   .object({
     email: z.string().email({ message: "Invalid email address" }),
-    userName: usernameSchema,
-    firstName: firstNameSchema,
-    lastName: lastNameSchema,
-    birthDate: birthDateSchema,
-    password: passwordSchema,
+    username: username,
+    firstName: firstName,
+    lastName: lastName,
+    birthDate: birthDate,
+    password: password,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
