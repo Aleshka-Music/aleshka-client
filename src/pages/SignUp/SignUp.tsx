@@ -79,7 +79,7 @@ export default function Form() {
       <div className="absolute right-0 top-0 p-2">
         <ModeToggle />
       </div>
-      <h1 className="text-3xl font-bold pt-10 pb-1 mx-2 duration-300">
+      <h1 className="text-3xl font-bold pt-[2.2em] pb-1 mx-2 duration-300">
         Welcome to Aleshka
       </h1>
 
