@@ -25,12 +25,12 @@ const steps = [
   {
     id: "Step 1",
     name: "Basic Info",
-    fields: ["email", "password", "confirmPassword"],
+    fields: ["email", "password", "username"],
   },
   {
     id: "Step 2",
     name: "Personal Info",
-    fields: ["username", "firstName", "lastName", "birthDate"],
+    fields: ["firstName", "lastName", "birthDate"],
   },
   { id: "Step 3", name: "Complete" },
 ];
@@ -60,31 +60,22 @@ export default function Form() {
     // Convert birthDate string to Date object
     const birthDate = new Date(data.birthDate);
 
-    try {
-      // Get backend response
-      const backendResponse = await registerRequest(
-        data.username,
-        data.email,
-        data.password,
-        data.firstName,
-        data.lastName,
-        birthDate
-      );
-
-      // Manage message based on response
-      if (backendResponse.status === 200) {
-        alert("User created successfully");
-        reset(); // Reset form on success
-      } else if (backendResponse.status === 409) {
-        alert("User already exists");
-        reset(); // Reset form on conflict
-        setCurrentStep(0);
-      } else {
-        alert("An error occurred");
-      }
-    } catch (error) {
-      console.error("Error during registration:", error);
-      alert("An error occurred");
+    const backendResponse = await registerRequest(
+      data.username,
+      data.email,
+      data.password,
+      data.firstName,
+      data.lastName,
+      birthDate
+    );
+    console.log(backendResponse);
+    if (backendResponse) {
+      reset();
+      setCurrentStep(0);
+      // Redirect to home page
+      window.location.href = "/home";
+    } else {
+      console.log("Error");
     }
   };
 
@@ -119,9 +110,11 @@ export default function Form() {
       <div className="absolute right-0 top-0 p-2">
         <ModeToggle />
       </div>
-      <h1 className="text-3xl font-bold pt-[2.2em] pb-1 mx-2 duration-300">
-        Welcome to Aleshka
-      </h1>
+      <div className="w-full text-center">
+        <h1 className="text-3xl font-bold pt-[2.2em] pb-1 mx-2 duration-300">
+          Sign Up to Aleshka
+        </h1>
+      </div>
 
       <Card className="flex flex-col justify-between w-11/12 px-4">
         <nav aria-label="Progress">
@@ -165,6 +158,20 @@ export default function Form() {
               <div className="flex-col justify-between mt-4">
                 <div className="text-start">
                   <Input
+                    type="text"
+                    id="username"
+                    placeholder="Enter your username"
+                    {...register("username")}
+                    autoComplete="username"
+                  />
+                  {errors.username?.message && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.username.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 text-start">
+                  <Input
                     type="email"
                     id="email"
                     placeholder="Enter your email"
@@ -191,20 +198,6 @@ export default function Form() {
                     </p>
                   )}
                 </div>
-                <div className="mt-4 text-start">
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your password"
-                    {...register("confirmPassword")}
-                    autoComplete="current-password"
-                  />
-                  {errors.confirmPassword?.message && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
-                </div>
               </div>
             </motion.div>
           )}
@@ -216,20 +209,6 @@ export default function Form() {
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <div className="flex-col justify-between mt-4">
-                <div className="text-start">
-                  <Input
-                    type="text"
-                    id="username"
-                    placeholder="Enter your username"
-                    {...register("username")}
-                    autoComplete="username"
-                  />
-                  {errors.username?.message && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.username.message}
-                    </p>
-                  )}
-                </div>
                 <div className="mt-4 text-start">
                   <Input
                     type="text"
